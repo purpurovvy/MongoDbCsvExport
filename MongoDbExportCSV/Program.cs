@@ -12,6 +12,7 @@ namespace MongoDbExportCSV
         private static string _mongoexportExePath;
         private static string _selectedDatabase;
         private static string _selectedCollection;
+        private static string _selectedFields;
 
         static void Main(string[] args)
         {
@@ -79,8 +80,23 @@ namespace MongoDbExportCSV
                         Thread.Sleep(1000);
                         Console.WriteLine("Please provide collection name: ");
                         _selectedCollection = Console.ReadLine();
-                        Console.WriteLine($"Export for DB: {_selectedDatabase}, Collection: {_selectedCollection} started...");
-                        BatchBuilder.PrepareSpecificExport(_connectionString, _selectedDatabase, _selectedCollection, _path, _mongoexportExePath);
+                    Console.WriteLine($"Export all fields from: {_selectedDatabase} - {_selectedCollection} (N to decline)?");
+                    pressedValue = Console.ReadLine();
+                        if (pressedValue.ToLower() == "n")
+                        {
+                            do
+                            {
+                                Thread.Sleep(1000);
+                                Console.WriteLine("Please provide fields (separated with ','): ");
+                                _selectedFields = Console.ReadLine();
+                            }
+                            while (!_selectedFields.Contains(","));
+                            BatchBuilder.PrepareSpecificExport(_connectionString, _selectedDatabase, _selectedCollection, _path, _mongoexportExePath,_selectedFields);
+                        }
+                        else { 
+                            Console.WriteLine($"Export for DB: {_selectedDatabase}, Collection: {_selectedCollection} started...");
+                            BatchBuilder.PrepareSpecificExport(_connectionString, _selectedDatabase, _selectedCollection, _path, _mongoexportExePath);
+                        }
 
                     }
                     else

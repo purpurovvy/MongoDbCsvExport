@@ -29,7 +29,7 @@ namespace MongoDbExportCSV
 
         }
 
-        public static void PrepareSpecificExport(string connectionString, string databaseName, string? collectionName, string path, string mongoexportExe)
+        public static void PrepareSpecificExport(string connectionString, string databaseName, string? collectionName, string path, string mongoexportExe, string fields = null)
         {
             var MongoDatabaseModelList = new List<MongoDatabaseModel>();
             var MongoDbCollectionModelList = new List<MongoCollectionModel>();
@@ -53,22 +53,30 @@ namespace MongoDbExportCSV
             }
             MongoDatabaseModelList.Add(new MongoDatabaseModel { DatabaseName = databaseName, Collections = MongoDbCollectionModelList });
 
-            CommandBuilder(MongoDatabaseModelList, path, mongoexportExe);
+            CommandBuilder(MongoDatabaseModelList, path, mongoexportExe, fields);
             Console.WriteLine("Your results are available in ./CSV_Export folder");
         }
 
-        private static void CommandBuilder(List<MongoDatabaseModel> mongoDatabaseModel, string path, string mongoexportExe)
+        private static void CommandBuilder(List<MongoDatabaseModel> mongoDatabaseModel, string path, string mongoexportExe, string providedFields = null)
         {
             foreach (var database in mongoDatabaseModel)
             {
                 foreach (var collection in database.Collections)
                 {
                     var fields = new StringBuilder("");
-                    foreach (var column in collection.Columns)
-                    {
-                        fields.Append($"{column},");
+                    if (String.IsNullOrEmpty(providedFields))
+                    { 
+                        
+                        foreach (var column in collection.Columns)
+                        {
+                            fields.Append($"{column},");
+                        }
+                        fields.Length--;
                     }
-                    fields.Length--;
+                    else
+                    {
+                        fields.Append(providedFields);
+                    }
                     MongoExport.ExportProcess(database.DatabaseName, collection.CollectionName, fields.ToString(), mongoexportExe, path );
                 }
             }
